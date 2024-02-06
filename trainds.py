@@ -108,9 +108,9 @@ def train(hyp,  # path/to/hyp.yaml or hyp dictionary
         data_dict = data_dict or check_dataset(data)  # check if Nonel
     ###hanfujun
     #train_path, val_path = data_dict['train'], data_dict['val']
-    train_path, val_path, domain_path = data_dict['train'], data_dict['val'], data_dict['domaintrain'] # 这里是加载检测和域自适应数据集的路径 
+    train_path, val_path, domain_path = data_dict['train'], data_dict['val'], data_dict['domaintrain']  
     print("-----------", train_path, val_path, domain_path)
-    roadseg_train_path, roadseg_val_path = data_dict['road_seg_train'], data_dict['road_seg_val'] # 这里是加载分割数据集的路径
+    roadseg_train_path, roadseg_val_path = data_dict['road_seg_train'], data_dict['road_seg_val'] 
 
     nc = 1 if single_cls else int(data_dict['nc'])  # number of classes
     segnc = int(data_dict['segnc'])
@@ -242,7 +242,6 @@ def train(hyp,  # path/to/hyp.yaml or hyp dictionary
 
     #print("cls balance :",cls_balance)
     mlc = int(np.concatenate(dataset.labels, 0)[:, 0].max())  # max label class
-    # nb是batch的图片的数量 nb = number of images / batch_size 
     nb = len(train_loader)  # number of batches
     snb = len(roadseg_train_loader)
     assert mlc < nc, f'Label class {mlc} exceeds nc={nc} in {data}. Possible class labels are 0-{nc - 1}'
@@ -337,11 +336,6 @@ def train(hyp,  # path/to/hyp.yaml or hyp dictionary
         iterr = iter(domain_train_loader)
         optimizer.zero_grad()
         seg_batch_iter = iter(roadseg_train_loader)
-        # i: 计时用的 一般从0开始
-        # imgs: 每一个batch中图片的数量 比如这里可以是16 也就是说这里的batch_size是16 每一个batch中有16个图片
-        # targets：这一个batch中的图片总数中有多少个groudtruth框。举例子的是84个。
-        # 也就是说第一个batch中，一共有16张图片，且16张图片一共含有84个groudtruth框
-        # paths: 每一个图片的路径 来自哪里
         for i, (imgs, targets, paths, _) in pbar:  # batch -------------------------------------------------------------
             ni = i + nb * epoch  # number integrated batches (since train start)
             imgs = imgs.to(device, non_blocking=True).float() / 255  # uint8 to float32, 0-255 to 0.0-1.0
@@ -350,21 +344,7 @@ def train(hyp,  # path/to/hyp.yaml or hyp dictionary
             #try:
             domainlist = next(iterr)
             domainimgs = domainlist[0]
-            #print("xxxxxxxx[domain] ",len(imgs), len(domainimgs)," " ,imgs[0].shape, domainimgs[0].shape)
-            """
-            # 这里做一个记录, 就是这里会出现一个现象。即: 可能会出现StopIteration。一个epoch在运行到最后的时候, 会出现这个bug。这是因为在最后面的时候
-            # len(imgs) ≠ len(domainimgs)。前面都是 6=6 或者 8=8 这要看atch_size设置的是多少。那该如何修改呢
-            # 检查自己的数据集！！！！！这是最重要的。首先保证数据集的格式，大小，是否能看见等等是否是正确的。
-            # 重要更新:之所以少了数据,是因为在读取成cache文件的时候,读了一半,人工结束了。这将导致部分读取文件夹中的照片变成了txt文件,从而导致图片数量变少,然后两个文件夹中的图片数量不对称。
-            # 第一种方式就是!!像我们这个案例中,比如保证来自domainimgs和imgs的图片的len是一样的。如果哪一边来的不一样, 就需要去检查。或者重新替换数据集!!
-            # 第二种方式就是，跳过不对的数据集。代码如下
-            # if(domainimgs.shape[0]<imgs.shape[0]):
-            #     domainlist= next(iterr,None)
-            #     if domainlist == None:
-            #        #break
-            #        print(ni)
-            #     domainimgs = domainlist[0]
-            """
+            #print("xxxxxxxx[domain] ",len(imgs), len(domainimgs)," " ,imgs[0].shape, domainimgs[0].shape)          
             if (domainimgs.shape[0] < imgs.shape[0]):
                 domainlist = next(iterr)
                 domainimgs = domainlist[0]
@@ -406,18 +386,6 @@ def train(hyp,  # path/to/hyp.yaml or hyp dictionary
                 if opt.quad:
                     loss *= 4.
 
-                # d_loss = torch.Tensor(domain_loss)
-                # print('loss:', loss)
-                # print('domain_loss:', domain_loss)
-                # loss = loss
-                """
-                这里有两个loss,一个是loss这个loss指的是原本的YOLOV5的loss = lbox + lobj + lcls
-                后面这个domain_loss指的是获得的域自适应loss
-                这两个loss可以单独获取系数, 也可以将YOLOV5的loss前面自己的分类的loss给一个系数
-                """
-                # loss = a * loss + b * domain_loss
-                # loss = (lbox + lobj + a*lcls) + b * domain_loss # 这里的a那个loss需要到loss.py中去修改
-                # print(domain_loss)
                 loss = loss + 0.01 * domain_loss # hanfujun 这里有一个系数(超参数)  #0.005
 
             # Backward
@@ -560,9 +528,7 @@ def train(hyp,  # path/to/hyp.yaml or hyp dictionary
     torch.cuda.empty_cache()
     return results
 
-# 这里的batch_size参数必须取训练集数量的整数倍，即能被整数整除。否则，最后在适应的时候容易报错！！！
-# 因为这里我们的训练集是2502，能被6和9整除，但是如果取9的话 会自动变成8。
-# 这是因为最后在自适应的时候，必须是偶数情况下的两两配对。
+
 def parse_opt(known=False):
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', type=str, default=ROOT / './yolov5s.pt', help='initial weights path')
