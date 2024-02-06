@@ -1,0 +1,19 @@
+
+# Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
+path: .  # dataset root dir
+train: /home/hanfujun/yolov5-DF/datasets/images/train/cityspaces_train  # train images (relative to 'path') 118287 images
+val: /home/hanfujun/yolov5-DF/datasets/images/val/cityspaces_val # train images (relative to 'path') 5000 images
+domaintrain: /home/hanfujun/yolov5-DF/datasets/images/train/cityspaces_foggy_train
+road_seg_train: /home/hanfujun/yolov5ds/paper_data/seg/images/train   # road segmentation data
+road_seg_val: /home/hanfujun/yolov5ds/paper_data/seg/images/val
+
+# Classes
+nc: 4  # number of classes
+segnc: 2
+
+# names: ['feed' ,'person' ,'road' ,'obstacle' ,'cow' ,'railing']  # class names
+# names: ['Two-Wheel Vehicle,Bicycle','Two-Wheel Vehicle,Motorcycle','Person,Pedestrian','Person,Rider'] #class name
+names: ['Bicycle','Motorcycle','Pedestrian','Rider'] #class name
+
+#segnames: ['feed' ,'person' ,'road' ,'obstacle' ,'cow' ,'railing']
+segnames: ['road']
