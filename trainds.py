@@ -108,8 +108,6 @@ def train(hyp,  # path/to/hyp.yaml or hyp dictionary
         data_dict = data_dict or check_dataset(data)  # check if Nonel
     ###hanfujun
     #train_path, val_path = data_dict['train'], data_dict['val']
-    # 这里的'train','val','domaintrain'其实指的是voc数据集中的关键词，网络根据这个关键词来找到数据集的路径
-    # 具体的配置全部都在data/model.yaml下面
     train_path, val_path, domain_path = data_dict['train'], data_dict['val'], data_dict['domaintrain'] # 这里是加载检测和域自适应数据集的路径 
     print("-----------", train_path, val_path, domain_path)
     roadseg_train_path, roadseg_val_path = data_dict['road_seg_train'], data_dict['road_seg_val'] # 这里是加载分割数据集的路径
