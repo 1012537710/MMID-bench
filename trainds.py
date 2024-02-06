@@ -37,7 +37,7 @@ from models.experimental import attempt_load
 from models.yolodhs import Model
 from utils.autoanchor import check_anchors
 from utils.autobatch import check_train_batch_size
-from utils.callbacks1 import Callbacks  # hanfujun  注意这里使用的是yolov5ds的callbacks！！
+from utils.callbacks1 import Callbacks  
 from utils.datasets import create_dataloader, create_road_seg_dataloader, create_domaindataloader
 from utils.downloads import attempt_download
 from utils.general import (LOGGER, check_dataset, check_file, check_git_status, check_img_size, check_requirements,
@@ -386,7 +386,7 @@ def train(hyp,  # path/to/hyp.yaml or hyp dictionary
                 if opt.quad:
                     loss *= 4.
 
-                loss = loss + 0.01 * domain_loss # hanfujun 这里有一个系数(超参数)  #0.005
+                loss = loss + 0.01 * domain_loss 
 
             # Backward
             scaler.scale(loss).backward()
@@ -554,7 +554,7 @@ def parse_opt(known=False):
     parser.add_argument('--adam', action='store_true', help='use torch.optim.Adam() optimizer')
     parser.add_argument('--sync-bn', action='store_true', help='use SyncBatchNorm, only available in DDP mode')
     parser.add_argument('--workers', type=int, default=8, help='max dataloader workers (per RANK in DDP mode)')
-    parser.add_argument('--project', default=ROOT / '/home/hanfujun/yolov5ds-main-transfer/runs/train/DALN-City/Night/I-DANN+diffusion', help='save to project/name')
+    parser.add_argument('--project', default=ROOT / '', help='save to project/name')
     parser.add_argument('--name', default='exp', help='save to project/name')
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
     parser.add_argument('--quad', action='store_true', help='quad dataloader')
